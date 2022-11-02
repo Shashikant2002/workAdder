@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -17,7 +19,7 @@ const userSchema = new mongoose.Schema({
     minlength: [8, "Password Will Be in 8 Character"],
   },
   avtar: {
-    publicId: String,
+    public_Id: String,
     url: String,
   },
   userCreatedAt: {
@@ -32,6 +34,11 @@ const userSchema = new mongoose.Schema({
       createdAt: Date,
     },
   ],
+
+  veryfied: {
+    type: Boolean,
+    default: false,
+  },
   otp: {
     type: Number,
   },
@@ -39,5 +46,25 @@ const userSchema = new mongoose.Schema({
     type: Date,
   },
 });
+
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+userSchema.methods.getJWTToken = function () {
+  return jwt.sign({ _id: this._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_TOKEN_EXPIRE * 24 * 60 * 60 * 1000,
+  });
+};
+
+userSchema.methods.comparePassword = async function (password) {
+  return bcrypt.compare(password, this.password);
+};
+
+userSchema.index({ otp_expire: 1 }, { expireAfterSeconds: 0 });
+
 
 export const User = mongoose.model("User", userSchema);

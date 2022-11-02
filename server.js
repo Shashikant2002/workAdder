@@ -9,5 +9,5 @@ config({
 connectDataBase();
 
 app.listen(process.env.PORT, () => {
-  console.log(`Server is Running on Port http://locslhost:${process.env.PORT}`);
+  console.log(`Server is Running on Port http://localhost:${process.env.PORT}`);
 });
