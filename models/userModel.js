@@ -23,8 +23,8 @@ const userSchema = new mongoose.Schema({
     url: String,
   },
   userCreatedAt: {
-    type: Date,
     default: Date.now,
+    type: Date,
   },
   tasks: [
     {
