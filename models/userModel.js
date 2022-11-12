@@ -45,10 +45,13 @@ const userSchema = new mongoose.Schema({
   otp_expire: {
     type: Date,
   },
+  resetPasswordotp: Number,
+  resetOtpExpire: Date,
 });
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
@@ -61,10 +64,12 @@ userSchema.methods.getJWTToken = function () {
 };
 
 userSchema.methods.comparePassword = async function (password) {
-  return bcrypt.compare(password, this.password);
+  console.log(this.password);
+  const comp = await bcrypt.compare(password, this.password);
+  console.log(comp);
+  return comp;
 };
 
 userSchema.index({ otp_expire: 1 }, { expireAfterSeconds: 0 });
-
 
 export const User = mongoose.model("User", userSchema);
