@@ -1,54 +1,60 @@
 import { User } from "../models/userModel.js";
 import { sendMail } from "../utils/sendMail.js";
 import { sendToken } from "../utils/sendToken.js";
+import cloudinary from "cloudinary";
+import fs from "fs";
 
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    const { avtar } = req.files;
-    console.log(name, email, password);
-    // console.log(avtar);
+    const { avatar } = await req.files;
 
-    // let user = await User.findOne({ email });
-    // if (user) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "User Already Exist",
-    //   });
-    // }
+    if (!name || !email || !password || !avatar) {
+      return res.status(400).json({
+        success: false,
+        message: "Fill Name Email and Password With a Profile Pic",
+      });
+    }
 
-    // const otp = Math.floor(Math.random() * 1000000);
-    // await sendMail(email, "Verify Your Account", `Your OTP: ${otp}`);
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({
+        success: false,
+        message: "User Already Exist",
+      });
+    }
 
-    // user = await User.create({
-    //   name,
-    //   email,
-    //   password,
-    //   avtar: {
-    //     public_id: "",
-    //     url: "",
-    //   },
-    //   otp,
-    //   otp_expire: new Date(Date.now() + process.env.OTP_EXPIRE * 60 * 1000),
-    // });
+    const filePath = avatar.tempFilePath;
+    const mycloud = await cloudinary.v2.uploader.upload(filePath, {
+      folder: "TodoApp",
+    });
+    fs.rmSync("./tmp", { recursive: true });
 
-    // sendToken(
-    //   res,
-    //   user,
-    //   201,
-    //   "OTP Sended to your E-Mail, Please Veryfy Your Account"
-    // );
-    // res.status(200).json({
-    //   message: "done",
-    //   name,
-    //   email,
-    //   password,
-    // });
-    res.send("ok");
+    const otp = Math.floor(Math.random() * 1000000);
+    await sendMail(email, "Verify Your Account", `Your OTP: ${otp}`);
+
+    user = await User.create({
+      name,
+      email,
+      password,
+      avtar: {
+        public_Id: mycloud.public_id,
+        url: mycloud.secure_url,
+      },
+      otp,
+      otp_expire: new Date(Date.now() + process.env.OTP_EXPIRE * 60 * 1000),
+    });
+
+    sendToken(
+      res,
+      user,
+      201,
+      "OTP Sended to your E-Mail, Please Veryfy Your Account"
+    );
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "error",
+      message: error,
     });
   }
 };
@@ -192,13 +198,16 @@ export const updateTask = async (req, res) => {
   try {
     const { taskId } = req.params;
     const user = await User.findById(req.user._id);
-
-    console.log(user.tasks);
-
     user.task = user.tasks.find(
       (task) => task._id.toString() === taskId.toString()
     );
-    console.log(user.tasks.completed);
+
+    if (!user.task) {
+      return res.status(400).json({
+        success: false,
+        message: "Task not Found",
+      });
+    }
 
     user.task.completed = !user.task.completed;
 
@@ -232,14 +241,28 @@ export const updateProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     const { name } = req.body;
-    // const { avtar } = req.files;
+    const { avatar } = await req.files;
 
     if (name) {
       user.name = name;
     }
-    // if (avtar) {
-    //   user.avtar = avtar;
-    // }
+
+    const filePath = avatar.tempFilePath;
+    if (filePath) {
+      await cloudinary.v2.uploader.destroy(user.avtar.public_Id, {
+        folder: "TodoApp",
+      });
+
+      const mycloud = await cloudinary.v2.uploader.upload(filePath, {
+        folder: "TodoApp",
+      });
+      fs.rmSync("./tmp", { recursive: true });
+      user.avtar = {
+        public_Id: mycloud.public_id,
+        url: mycloud.url,
+      };
+    }
+
     await user.save();
     res.status(200).json({
       success: true,

@@ -64,10 +64,7 @@ userSchema.methods.getJWTToken = function () {
 };
 
 userSchema.methods.comparePassword = async function (password) {
-  console.log(this.password);
-  const comp = await bcrypt.compare(password, this.password);
-  console.log(comp);
-  return comp;
+  return await bcrypt.compare(password, this.password);
 };
 
 userSchema.index({ otp_expire: 1 }, { expireAfterSeconds: 0 });
