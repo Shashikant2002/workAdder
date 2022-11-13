@@ -18,7 +18,7 @@ app.use(cors());
 
 app.use("/api/v1", User);
 
-app.post("/", (req, res) => {
+app.get("/", (req, res) => {
   res.send({
     success: true,
     message: "Server is Working",
