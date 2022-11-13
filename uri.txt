@@ -1,5 +1,5 @@
 MONGO_URI="mongodb+srv://shashikant2002:4886Shashi%40384443@cluster0.f9tcemk.mongodb.net/newProject?retryWrites=true&w=majority"
-
+MONGO_URI="mongodb://localhost:27017/togo"
 
 // {
 //   "name":"Shashikant",
