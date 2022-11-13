@@ -20,6 +20,7 @@ app.use("/api/v1", User);
 
 app.get("/", (req, res) => {
   res.send({
-    message: "Success Shashikant",
+    success: true,
+    message: "Server is Working",
   });
 });
