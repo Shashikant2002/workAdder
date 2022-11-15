@@ -4,7 +4,7 @@ import { connectDataBase } from "./config/database.js";
 import cloudinary from "cloudinary";
 
 config({
-  path: "./config/config.env",
+  path: "/config/config.env",
 });
 
 cloudinary.config({
