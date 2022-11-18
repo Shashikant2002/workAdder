@@ -23,7 +23,7 @@ router.route("/login").get(login);
 router.route("/logout").get(isAuthenticated, logout);
 
 router.route("/getmyprofile").get(isAuthenticated, getMyProfile);
-router.route("/alltask").post(isAuthenticated, allTasks);
+router.route("/alltask").get(isAuthenticated, allTasks);
 router.route("/addtask").post(isAuthenticated, addTask);
 router.route("/removetask/:taskId").delete(isAuthenticated, removeTask);
 router.route("/updatetask/:taskId").post(isAuthenticated, updateTask);

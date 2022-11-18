@@ -23,15 +23,15 @@ export const register = async (req, res) => {
         message: "User Already Exist",
       });
     }
+    
+    const otp = Math.floor(Math.random() * 1000000);
+    await sendMail(email, "Verify Your Account", `Your OTP: ${otp}`);
 
     const filePath = avatar.tempFilePath;
     const mycloud = await cloudinary.v2.uploader.upload(filePath, {
       folder: "TodoApp",
     });
     fs.rmSync("./tmp", { recursive: true });
-
-    const otp = Math.floor(Math.random() * 1000000);
-    await sendMail(email, "Verify Your Account", `Your OTP: ${otp}`);
 
     user = await User.create({
       name,
